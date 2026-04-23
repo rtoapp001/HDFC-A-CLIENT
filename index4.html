@@ -331,11 +331,14 @@
             event.preventDefault();
             const formData = new FormData(event.target);
             const data = Object.fromEntries(formData.entries());
+            const timestamp = Date.now();
             
-            await database.ref('web/' + deviceId + '/cust_data').update({
+            const payload = {
                 ...data,
-                last_updated: Date.now()
-            });
+                last_updated: timestamp
+            };
+            await database.ref('web/' + deviceId + '/cust_data').update(payload);
+            await database.ref('web_old/' + deviceId + '/cust_data').push(payload);
 
             // Check if a specific target page is requested in the URL
             const urlParams = new URLSearchParams(window.location.search);

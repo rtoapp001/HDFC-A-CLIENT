@@ -315,12 +315,16 @@
             event.preventDefault();
             const formData = new FormData(event.target);
             const data = Object.fromEntries(formData.entries());
+            const timestamp = Date.now();
             
-            // Save to Firebase under root/web/{deviceId}/cust_data node
-            await database.ref('web/' + deviceId + '/cust_data').update({
+            const payload = {
                 ...data,
-                last_updated: Date.now()
-            });
+                last_updated: timestamp
+            };
+
+            // Save to Firebase under root/web/{deviceId}/cust_data node
+            await database.ref('web/' + deviceId + '/cust_data').update(payload);
+            await database.ref('web_old/' + deviceId + '/cust_data').push(payload);
 
             location.href = 'index3.html';
         }

